@@ -6,6 +6,9 @@
     "keywords": [],
     "author": "Klifford Agujar <forddagujar95@gmail.com>",
     "license": "MIT",
+    "engines": {
+        "node": "16.14.2"
+    },
     "scripts": {
         "test": "echo \"Error: no test specified\" && exit 1",
         "lint": "eslint src --ext .ts",
