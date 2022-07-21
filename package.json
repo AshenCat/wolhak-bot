@@ -8,7 +8,8 @@
         "lint": "eslint src --ext .ts",
         "format": "prettier --write src/**/*.ts",
         "build": "tsc",
-        "check-types": "tsc --noEmit"
+        "check-types": "tsc --noEmit",
+        "dev:main": "nodemon src/main.ts"
     },
     "keywords": [],
     "author": "Klifford Agujar <forddagujar95@gmail.com>",
@@ -24,7 +25,6 @@
         "typescript": "^4.7.4"
     },
     "dependencies": {
-        "@discordjs/builders": "^1.0.0",
         "@discordjs/rest": "^1.0.0",
         "discord-api-types": "^0.36.2",
         "discord.js": "^14.0.3",
