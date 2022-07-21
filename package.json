@@ -3,17 +3,18 @@
     "version": "0.0.0",
     "description": "",
     "main": "index.js",
+    "keywords": [],
+    "author": "Klifford Agujar <forddagujar95@gmail.com>",
+    "license": "MIT",
     "scripts": {
         "test": "echo \"Error: no test specified\" && exit 1",
         "lint": "eslint src --ext .ts",
         "format": "prettier --write src/**/*.ts",
         "build": "tsc",
         "check-types": "tsc --noEmit",
-        "dev:main": "nodemon src/main.ts"
+        "dev:main": "nodemon src/main.ts",
+        "start": "node build/main.js"
     },
-    "keywords": [],
-    "author": "Klifford Agujar <forddagujar95@gmail.com>",
-    "license": "MIT",
     "devDependencies": {
         "@types/node": "^18.0.6",
         "@typescript-eslint/eslint-plugin": "^5.30.7",
