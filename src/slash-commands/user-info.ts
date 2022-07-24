@@ -79,4 +79,5 @@ export const UserInfoCommand: SlashCommand = {
             embeds: [embed],
         });
     },
+    help: 'this command returns the info of the user',
 };

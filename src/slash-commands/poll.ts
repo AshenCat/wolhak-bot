@@ -313,4 +313,5 @@ export const PollCommand: SlashCommand = {
 
         onComponentsCollect();
     },
+    help: 'Command for creating a poll that can have a time between 1 and 60 seconds/minutes/hours and up to 10 options. You can also add a title, a description and whetheror not you want to be notified via DM when the poll ends.',
 };
