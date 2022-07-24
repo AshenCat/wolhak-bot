@@ -106,7 +106,7 @@ export const PollCommand: SlashCommand = {
                 });
             shownOptions.forEach(({ label, value, emoji }) => {
                 embed.addFields([
-                    { name: label, value: `${emoji} - ${value}` },
+                    { name: label, value: `${emoji} - ${value}`, inline: true },
                 ]);
             });
             return embed;
@@ -239,6 +239,7 @@ export const PollCommand: SlashCommand = {
                             {
                                 name: `Votes for "${value}"`,
                                 value: frequencies[emoji].toString(),
+                                inline: true,
                             },
                         ]);
                     });

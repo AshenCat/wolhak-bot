@@ -32,6 +32,7 @@ export const UserInfoCommand: SlashCommand = {
                 {
                     name: 'Registered at',
                     value: getFormattedDate(user.createdAt),
+                    inline: true,
                 },
             ]);
 
@@ -52,6 +53,7 @@ export const UserInfoCommand: SlashCommand = {
                     {
                         name: 'Joined at',
                         value: getFormattedDate(joinedAt),
+                        inline: true,
                     },
                 ]);
             }
@@ -66,6 +68,7 @@ export const UserInfoCommand: SlashCommand = {
                     {
                         name: `roles[${filteredRoles.length}]`,
                         value: filteredRoles.join(),
+                        inline: true,
                     },
                 ]);
             }
