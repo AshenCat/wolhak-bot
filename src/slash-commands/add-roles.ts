@@ -8,7 +8,7 @@ export const AddRolesCommand: SlashCommand = {
         .setDescription(
             'Creates a message so that people can get their own roles'
         )
-        .setDefaultMemberPermissions(false),
+        .setDefaultPermission(false),
     async run(interaction) {
         if (!interaction.inCachedGuild()) {
             await interaction.reply({
