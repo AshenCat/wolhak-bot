@@ -94,12 +94,13 @@ export const PollCommand: SlashCommand = {
                     name: member.displayName,
                     iconURL: user.displayAvatarURL(),
                 })
-                .setTitle(title || 'Poll')
+                .setTitle(title !== '' ? title : 'Poll')
                 .setDescription(
-                    description ||
-                        `React to vote. The poll is going to be available for ${time} ${formattedTimeUnit}`
+                    description !== ''
+                        ? description
+                        : `React to vote. The poll is going to be available for ${time} ${formattedTimeUnit}`
                 )
-                .setColor('DarkRed')
+                .setColor('Blue')
                 .setFooter({
                     text: 'In case of a draw, a random item is selected.',
                 });
@@ -124,6 +125,144 @@ export const PollCommand: SlashCommand = {
             ]);
         };
 
+        const getTimeInMs = () => {
+            switch (timeUnit) {
+                case TimeUnit.seconds:
+                    return time * 1000;
+                case TimeUnit.minutes:
+                    return time * 60 * 1000;
+                case TimeUnit.hours:
+                    return time * 60 * 60 * 1000;
+            }
+        };
+
+        const buildComponentsCollector = () => {
+            return message.createMessageComponentCollector({
+                time: timeInMs,
+            });
+        };
+
+        const buildReactionsCollector = () => {
+            const shownEmojisMap = shownOptions.reduce<Record<string, boolean>>(
+                (map, { emoji }) => {
+                    map[emoji] = true;
+                    return map;
+                },
+                {}
+            );
+
+            return message.createReactionCollector({
+                time: timeInMs,
+                filter: (reaction) => {
+                    const emoji = reaction.emoji.name;
+                    if (!emoji) return false;
+
+                    return !!shownEmojisMap[emoji];
+                },
+            });
+        };
+
+        const onComponentsCollect = () => {
+            componentsCollector.on('collect', async (componentInteraction) => {
+                if (componentInteraction.customId === 'cancel') {
+                    if (componentInteraction.user.id !== user.id) {
+                        await componentInteraction.fetchReply();
+                        await componentInteraction.followUp({
+                            content: 'You cannot cancel this poll',
+                            ephemeral: true,
+                        });
+                        return;
+                    }
+                    reactionsCollector.stop('cancel-poll');
+                    return;
+                }
+                if (componentInteraction.customId === 'end-poll') {
+                    if (componentInteraction.user.id !== user.id) {
+                        await componentInteraction.fetchReply();
+                        await componentInteraction.followUp({
+                            content: 'You cannot end this poll',
+                            ephemeral: true,
+                        });
+                        return;
+                    }
+                    reactionsCollector.stop();
+                    return;
+                }
+            });
+        };
+
+        const addReactions = async () => {
+            for (let i = 0; i < shownOptions.length; i++) {
+                if (tooFast) return;
+                await message.react(shownOptions[i].emoji);
+            }
+        };
+
+        const onReactionEnd = () => {
+            reactionsCollector.on('end', async (collected, reason) => {
+                let mostFrequentEmoji = '';
+                let maxCount = 0;
+
+                for (const [key, value] of collected.entries()) {
+                    if (value.count > maxCount) {
+                        mostFrequentEmoji = key;
+                        maxCount = value.count;
+                    }
+
+                    frequencies[key] = value.count;
+                }
+
+                const winner = shownOptions.find(
+                    ({ emoji }) => emoji === mostFrequentEmoji
+                );
+
+                tooFast =
+                    shownOptions.length !== Object.keys(frequencies).length;
+
+                embed
+                    .setColor('Green')
+                    .setDescription(
+                        `The poll has ended. The winner is ${winner?.value}`
+                    )
+                    .setFields([]);
+
+                if (tooFast) {
+                    embed
+                        .setDescription(
+                            'Ooops! the poll time is too low for reactions to be added. Consider increasing it.'
+                        )
+                        .setColor('Red')
+                        .setFooter(null);
+                } else {
+                    shownOptions.forEach(({ value, emoji }) => {
+                        embed.addFields([
+                            {
+                                name: `Votes for "${value}"`,
+                                value: frequencies[emoji].toString(),
+                            },
+                        ]);
+                    });
+                }
+
+                // await message.reactions.removeAll();
+
+                if (reason === 'cancel-poll') {
+                    embed
+                        .setColor('Red')
+                        .setDescription('This poll was cancelled.')
+                        .setFooter(null);
+                }
+
+                await message.edit({ embeds: [embed], components: [] });
+
+                if (dmNotify && reason !== 'cancel-poll' && !tooFast) {
+                    await user.send(
+                        `Your poll (${message.url}) ended successfully.`
+                    );
+                }
+            });
+        };
+
         const { options, user, guildId, client, channel } = interaction;
 
         const guild = interaction.guild || (await client.guilds.fetch(guildId));
@@ -140,7 +279,7 @@ export const PollCommand: SlashCommand = {
             ): shownOption is { emoji: string; label: string; value: string } =>
                 !!shownOption.value
         );
-        const time = options.get('time')?.value;
+        const time = parseInt('' + options.get('time')?.value);
         const timeUnit = ('' + options.get('time_unit')?.value) as TimeUnit;
         const title = '' + options.get('title')?.value;
         const description = '' + options.get('description')?.value;
@@ -153,9 +292,24 @@ export const PollCommand: SlashCommand = {
             content: 'Poll successfully created',
         });
 
-        const mesage = await channel.send({
+        const message = await channel.send({
             embeds: [embed],
             components: [buttons],
         });
+
+        const timeInMs = getTimeInMs();
+
+        const componentsCollector = buildComponentsCollector();
+        const reactionsCollector = buildReactionsCollector();
+
+        const frequencies: Record<string, number> = {};
+
+        let tooFast = false;
+
+        onReactionEnd();
+
+        await addReactions();
+
+        onComponentsCollect();
     },
 };

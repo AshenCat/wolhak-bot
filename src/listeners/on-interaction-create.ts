@@ -3,6 +3,9 @@ import { SlashCommands } from '../slash-commands';
 
 export const onInteractionCreate = (client: Client) => {
     client.on('interactionCreate', async (interaction) => {
+        if (interaction.isButton()) {
+            await interaction.deferUpdate();
+        }
         if (interaction.type === InteractionType.ApplicationCommand) {
             await handleSlashCommand(interaction);
         }
