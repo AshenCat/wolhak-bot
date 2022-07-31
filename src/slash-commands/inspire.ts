@@ -1,5 +1,6 @@
 import axios from 'axios';
 import { EmbedBuilder, SlashCommandBuilder } from 'discord.js';
+import { DEV } from '../config';
 import { SlashCommand } from '../types';
 
 const INSPIRE_URL = 'https://inspirobot.me/api?generate=true';
@@ -10,7 +11,7 @@ type InspireResponse = {
 
 export const InspireCommand: SlashCommand = {
     command: new SlashCommandBuilder()
-        .setName('inspire')
+        .setName(`${DEV ? 'dev_' : ''}inspire`)
         .setDescription('Returns an inspiration'),
 
     async run(interaction) {

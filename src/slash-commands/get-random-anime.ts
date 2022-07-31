@@ -1,9 +1,6 @@
 import axios from 'axios';
-import {
-    EmbedBuilder,
-    hyperlink,
-    SlashCommandBuilder,
-} from 'discord.js';
+import { EmbedBuilder, hyperlink, SlashCommandBuilder } from 'discord.js';
+import { DEV } from '../config';
 import { SlashCommand } from '../types';
 
 const GET_RANDOM_ANIME_URL = 'https://api.jikan.moe/v4/random/anime';
@@ -136,7 +133,7 @@ type GetRandomAnimeResponse = {
 
 export const GetRandomAnimeCommand: SlashCommand = {
     command: new SlashCommandBuilder()
-        .setName('get_random_anime')
+        .setName(`${DEV ? 'dev_' : ''}get_random_anime`)
         .setDescription('Returns a random anime'),
 
     async run(interaction) {

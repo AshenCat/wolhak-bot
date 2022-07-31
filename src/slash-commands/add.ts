@@ -1,4 +1,5 @@
 import { SlashCommandBuilder } from 'discord.js';
+import { DEV } from '../config';
 import { SlashCommand } from '../types';
 
 export const AddCommand: SlashCommand = {
@@ -15,7 +16,7 @@ export const AddCommand: SlashCommand = {
                 .setDescription('Number 2')
                 .setRequired(true)
         )
-        .setName('add')
+        .setName(`${DEV ? 'dev_' : ''}add`)
         .setDescription('Returns the sum of the two numbers'),
     async run(interaction) {
         const { options } = interaction;
