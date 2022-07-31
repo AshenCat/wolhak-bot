@@ -5,6 +5,7 @@ import { GetRandomAnimeCommand } from './get-random-anime';
 import { GoogleCommand } from './google';
 import { HelloCommand } from './hello';
 import { HelpCommand } from './help';
+import { HugCommand } from './hug';
 import { InspireCommand } from './inspire';
 import { PollCommand } from './poll';
 import { UserInfoCommand } from './user-info';
@@ -18,6 +19,7 @@ const SlashCommands: SlashCommand[] = [
     GetRandomAnimeCommand,
     // AddRolesCommand,
     InspireCommand,
+    HugCommand,
 ];
 
 // const helpArray: HelpArray = SlashCommands.filter(
