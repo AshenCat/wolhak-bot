@@ -24,6 +24,8 @@ export const InspireCommand: SlashCommand = {
 
             const url = response.data;
 
+            if (!url || url.trim() === '') throw 'Empty Response';
+
             const user = interaction.user.id;
 
             const embed = new EmbedBuilder()
