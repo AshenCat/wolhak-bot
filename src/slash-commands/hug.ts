@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { EmbedBuilder, SlashCommandBuilder } from 'discord.js';
+import { EmbedBuilder, SlashCommandBuilder, TextChannel } from 'discord.js';
 import { DEV, TENOR_API_KEY } from '../config';
 import User from '../db/models/user.model';
 import { SlashCommand } from '../types';
@@ -197,8 +197,13 @@ export const HugCommand: SlashCommand = {
 
             await interaction.editReply({
                 embeds: [embed],
-                // content: `https://media3.giphy.com/media/${data.id}/giphy.gif`,
             });
+
+            const channel = interaction.channel;
+
+            if (channel?.isTextBased()) {
+                (<TextChannel>channel).send({ content: `${hugTagMap}` });
+            }
         } catch (err) {
             console.log(err);
             await interaction.editReply({
