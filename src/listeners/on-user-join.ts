@@ -14,7 +14,8 @@ export const onUserJoin = (client: Client) => {
         });
         if (!WELCOME_CHANNEL_ID) return;
         const welcomeChannel =
-            member.guild.channels.cache.get(WELCOME_CHANNEL_ID);
+            member.guild.channels.cache.get(WELCOME_CHANNEL_ID) ||
+            (await member.guild.channels.fetch(WELCOME_CHANNEL_ID));
         const embed = new EmbedBuilder()
             .setTitle(`A new challenger arrived!`)
             .setDescription(

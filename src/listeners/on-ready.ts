@@ -15,14 +15,20 @@ export const onReady = (client: Client) => {
 
         const MONGO_URI = DB_CONFIG_STRING();
 
-        mongoose.connect(MONGO_URI, async () => {
+        console.log(MONGO_URI);
+
+        mongoose.connect(MONGO_URI, async (err) => {
+            if (err) {
+                console.error('Error: ', err);
+                process.exit(1);
+            }
             console.log('Connected to DB');
 
             const guild = client.guilds.cache;
             const GUILD_MEMBERS = await guild.get(GUILD_ID)?.members.fetch();
 
             // loop through the members and save to db if not on db
-            GUILD_MEMBERS?.map(async (value, key) => {
+            GUILD_MEMBERS?.forEach(async (value, key) => {
                 const exists = await User.findOne({ discord_user_id: key });
                 if (exists) {
                     console.log(`${key}: ${value.displayName} found`);

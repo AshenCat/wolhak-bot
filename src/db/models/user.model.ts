@@ -8,6 +8,8 @@ interface IUserDoc extends mongoose.Document {
         other_discord_user_id: string;
         count: number;
     }[];
+    created_at: string;
+    updated_at: string;
 }
 
 const userSchema = new Schema(
