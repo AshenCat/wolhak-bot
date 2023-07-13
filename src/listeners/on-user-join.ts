@@ -27,5 +27,8 @@ export const onUserJoin = (client: Client) => {
         if (welcomeChannel?.isTextBased()) {
             (<TextChannel>welcomeChannel).send({ embeds: [embed] });
         }
+        console.log(
+            `${new Date(Date.now())}: ${member.displayName} has joined!`
+        );
     });
 };
