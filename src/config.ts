@@ -18,3 +18,5 @@ export const GPT_INTERVAL = (() => {
     if (typeof GPT_INT === 'number') return GPT_INT;
     return 15;
 })();
+export const TIMEZONE = 'America/Toronto';
+export const DATETIME_FORMAT = 'YYYY-MM-DD hh:mm:ss a z';
