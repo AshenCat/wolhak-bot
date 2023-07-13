@@ -1,8 +1,9 @@
 import { Client, GatewayIntentBits, Partials } from 'discord.js';
-import { TOKEN } from './config';
+import { DATETIME_FORMAT, TIMEZONE, TOKEN } from './config';
 import { onInteractionCreate, onMessageCreate, onReady } from './listeners';
 import { onUserJoin } from './listeners/on-user-join';
 import cron from 'node-cron';
+import moment from 'moment-timezone';
 
 const client = new Client({
     intents: [
@@ -25,5 +26,8 @@ onUserJoin(client);
 client.login(TOKEN);
 
 cron.schedule('0 * * * *', () => {
-    console.log(`${new Date(Date.now())}: Health check success!`);
+    const date = new Date(Date.now());
+    const date_moment = moment(date);
+    const datetimeString = date_moment.tz(TIMEZONE).format(DATETIME_FORMAT);
+    console.log(`${datetimeString}: Health check success!`);
 });
