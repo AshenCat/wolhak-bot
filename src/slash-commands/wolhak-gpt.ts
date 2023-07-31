@@ -5,6 +5,7 @@ import { Configuration, OpenAIApi } from 'openai';
 import User from '../db/models/user.model';
 import Gpt from '../db/models/gpt.model';
 import { getChatGPTResponse } from '../helper-functions';
+import { AxiosError } from 'axios';
 
 // type ChatGPTResponseType = {
 //     id: string;
@@ -154,8 +155,10 @@ export const WolhakGPTCommand: SlashCommand = {
             interaction.editReply({
                 embeds: [embed],
             });
-        } catch (err) {
-            console.log(err);
+        } catch (error) {
+            const err = error as AxiosError;
+            // console.error(err);
+            console.error(err.toJSON());
             await interaction.editReply({
                 content: `I'm sorry, ChatGPT said: ${String(
                     err

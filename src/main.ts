@@ -25,7 +25,7 @@ onUserJoin(client);
 
 client.login(TOKEN);
 
-cron.schedule('0 * * * *', () => {
+cron.schedule('*/5 * * * *', () => {
     const date = new Date(Date.now());
     const date_moment = moment(date);
     const datetimeString = date_moment.tz(TIMEZONE).format(DATETIME_FORMAT);
