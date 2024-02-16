@@ -1,25 +1,36 @@
 import axios from 'axios';
 import { EmbedBuilder, SlashCommandBuilder, TextChannel } from 'discord.js';
-import { DEV, TENOR_API_KEY } from '../config';
+import { DEV } from '../config';
 import User from '../db/models/user.model';
 import { SlashCommand } from '../types';
 
-const TENOR_API = encodeURI(
-    `https://api.tenor.com/v1/random?q=anime%20hug&key=${TENOR_API_KEY}`
-);
+// const TENOR_API = encodeURI(
+//     `https://api.tenor.com/v1/random?q=anime%20hug&key=${TENOR_API_KEY}`
+// );
 
-type TenorResponse = {
-    data: {
-        results: {
-            id: string;
-            media: {
-                gif: {
-                    url: string;
-                    preview: string;
-                };
-            }[];
-        }[];
-    };
+// type TenorResponse = {
+//     data: {
+//         results: {
+//             id: string;
+//             media: {
+//                 gif: {
+//                     url: string;
+//                     preview: string;
+//                 };
+//             }[];
+//         }[];
+//     };
+// };
+
+const NEKOS_BEST_API = encodeURI(`https://nekos.best/api/v2/hug`);
+
+type NekosBestAPIResponse = {
+    results: [
+        {
+            anime_name: string;
+            url: string;
+        }
+    ];
 };
 
 export const HugCommand: SlashCommand = {
@@ -163,13 +174,19 @@ export const HugCommand: SlashCommand = {
                 await db_user.save();
             }
 
-            const response: TenorResponse = await axios.get(TENOR_API);
+            // const response: TenorResponse = await axios.get(TENOR_API);
+            const response = await axios.get<NekosBestAPIResponse>(
+                NEKOS_BEST_API
+            );
 
-            const {
-                data: { results },
-            } = response;
+            // const {
+            //     data: { results },
+            // } = response;
 
-            const gifUrl = results[0].media[0].gif.url;
+            // const gifUrl = results[0].media[0].gif.url;
+
+            const gifUrl = response.data.results[0].url;
+            const gifAnimeName = response.data.results[0].anime_name;
             // const previewUrl = results[0].media[0].gif.preview;
 
             const hugTagMap = hugObjectArr
@@ -185,7 +202,8 @@ export const HugCommand: SlashCommand = {
                 .setDescription(descriptionString)
                 .setThumbnail('' + user.avatarURL())
                 .setImage(gifUrl)
-                .setColor('Blurple');
+                .setColor('Blurple')
+                .setFooter({ text: gifAnimeName });
 
             if (hugObjectArr.length)
                 embed.addFields(
