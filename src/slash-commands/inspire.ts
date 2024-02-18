@@ -1,13 +1,7 @@
-import axios from 'axios';
 import { EmbedBuilder, SlashCommandBuilder } from 'discord.js';
 import { DEV } from '../config';
 import { SlashCommand } from '../types';
-
-const INSPIRE_URL = 'https://inspirobot.me/api?generate=true';
-
-type InspireResponse = {
-    data: string;
-};
+import { getInspirationImageURL } from '../helper-functions';
 
 export const InspireCommand: SlashCommand = {
     command: new SlashCommandBuilder()
@@ -18,21 +12,14 @@ export const InspireCommand: SlashCommand = {
         await interaction.deferReply();
 
         try {
-            const response = await axios.get<InspireResponse['data']>(
-                INSPIRE_URL
-            );
-
-            const url = response.data;
+            const url = await getInspirationImageURL();
 
             if (!url || url.trim() === '') throw 'Empty Response';
-
             const user = interaction.user.id;
-
             const embed = new EmbedBuilder()
                 .setDescription(`*Here's an inspiration for <@${user}>*`)
                 .setImage(url)
                 .setColor('Blurple');
-
             await interaction.editReply({
                 embeds: [embed],
             });
