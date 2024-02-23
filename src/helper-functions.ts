@@ -1,5 +1,6 @@
-import { CreateChatCompletionResponseChoicesInner } from 'openai';
 import axios from 'axios';
+import Jimp from 'jimp';
+import OpenAI from 'openai';
 
 const INSPIRE_URL = 'https://inspirobot.me/api?generate=true';
 
@@ -8,7 +9,7 @@ type InspireResponse = {
 };
 
 export const getChatGPTResponse = (
-    choices: CreateChatCompletionResponseChoicesInner[]
+    choices: OpenAI.Chat.Completions.ChatCompletion.Choice[]
 ): string => {
     let finalMsg = 'Chat GPT Responded: \n';
     choices.forEach((msg) => (finalMsg += msg.message?.content));

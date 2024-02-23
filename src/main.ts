@@ -5,7 +5,7 @@ import {
     Partials,
     TextChannel,
 } from 'discord.js';
-import { DATETIME_FORMAT, TIMEZONE, TOKEN, WELCOME_CHANNEL_ID } from './config';
+import { DATETIME_FORMAT, DEV, TIMEZONE, TOKEN, WELCOME_CHANNEL_ID } from './config';
 import { onInteractionCreate, onMessageCreate, onReady } from './listeners';
 import { onUserJoin } from './listeners/on-user-join';
 import cron from 'node-cron';
@@ -43,6 +43,7 @@ cron.schedule('*/30 * * * *', () => {
 // DAILY INSPIRATION
 cron.schedule('0 0 * * *', async () => {
     try {
+        if (DEV) return;
         if (!WELCOME_CHANNEL_ID) return;
         const welcomeChannel =
             client.channels.cache.get(WELCOME_CHANNEL_ID) ||

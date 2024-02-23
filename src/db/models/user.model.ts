@@ -4,6 +4,7 @@ import mongoose, { Schema } from 'mongoose';
 // that a User Document has
 interface IUserDoc extends mongoose.Document {
     discord_user_id: string;
+    zodiac: string;
     hugs: {
         other_discord_user_id: string;
         count: number;
@@ -17,6 +18,10 @@ const userSchema = new Schema(
         discord_user_id: {
             type: String,
             required: true,
+        },
+        zodiac: {
+            type: String,
+            required: false,
         },
         hugs: [
             {

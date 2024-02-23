@@ -20,3 +20,18 @@ export const GPT_INTERVAL = (() => {
 })();
 export const TIMEZONE = 'America/Toronto';
 export const DATETIME_FORMAT = 'YYYY-MM-DD hh:mm:ss a z';
+
+export const ZODIAC_SIGNS = {
+    Aries: 'Aries',
+    Taurus: 'Taurus',
+    Gemini: 'Gemini',
+    Cancer: 'Cancer',
+    Leo: 'Leo',
+    Virgo: 'Virgo',
+    Libra: 'Libra',
+    Scorpio: 'Scorpio',
+    Sagittarius: 'Sagittarius',
+    Capricorn: 'Capricorn',
+    Aquarius: 'Aquarius',
+    Pisces: 'Pisces',
+};

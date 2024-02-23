@@ -1,15 +1,13 @@
 import { EmbedBuilder, SlashCommandBuilder } from 'discord.js';
 import { DEV, GPT_INTERVAL, OPEN_API_KEY } from '../config';
 import { SlashCommand } from '../types';
-import { Configuration, CreateImageRequestSizeEnum, OpenAIApi } from 'openai';
+import OpenAI from 'openai';
 import User from '../db/models/user.model';
 import Gpt from '../db/models/gpt.model';
 
-const configuration = new Configuration({
+const openai = new OpenAI({
     apiKey: OPEN_API_KEY,
 });
-
-const openai = new OpenAIApi(configuration);
 
 export const WolhakImageGPTCommand: SlashCommand = {
     command: new SlashCommandBuilder()
@@ -88,14 +86,14 @@ export const WolhakImageGPTCommand: SlashCommand = {
             }
 
             const imageResponse = (
-                await openai.createImage({
+                await openai.images.generate({
                     prompt,
-                    size: size as CreateImageRequestSizeEnum,
+                    size: size as '256x256' | '512x512' | '1024x1024',
                     n: 1,
                 })
             ).data;
 
-            if (!imageResponse.data.length)
+            if (!imageResponse.length)
                 throw new Error('I have no words for that.');
 
             const embed = new EmbedBuilder()
@@ -112,7 +110,7 @@ export const WolhakImageGPTCommand: SlashCommand = {
                     value: '1',
                     inline: true,
                 })
-                .setImage('' + imageResponse.data[0].url);
+                .setImage('' + imageResponse[0].url);
 
             const gpt_response = new Gpt({
                 type: 'image/generations',
