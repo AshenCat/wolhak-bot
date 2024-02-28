@@ -197,7 +197,11 @@ export const HoroscopeCommand: SlashCommand = {
             console.log('-----------finalImagePath: ');
             console.log(finalImagePath);
 
-            console.log(getS3FileURL(finalImagePath))
+
+            const url = getS3FileURL(finalImagePath);
+
+            console.log('-----------URL')
+            console.log(url)
 
             const embed = new EmbedBuilder()
                 .setTitle(
@@ -227,7 +231,7 @@ export const HoroscopeCommand: SlashCommand = {
                     inline: true,
                 })
                 // .setDescription(`${horoscope}`)
-                .setImage('' + getS3FileURL(finalImagePath));
+                .setImage(url);
 
             interaction.editReply({
                 embeds: [embed],

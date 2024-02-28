@@ -262,15 +262,6 @@ const newLineBuilder = (longstring: string) => {
 
 export const getS3FileURL = (filename: string) => {
     // https://wolhak.s3.us-east-1.amazonaws.com/dev/dev-283092691946831885-Taurus-26-02-2024.jpg
-    console.log(
-        'https://' +
-            S3_BUCKET_NAME +
-            '.s3.' +
-            AWS_REGION +
-            '.amazonaws.com/' +
-            (DEV ? 'dev/' : 'prod/') +
-            filename
-    );
     return 'https://' +
         S3_BUCKET_NAME +
         '.s3.' +
