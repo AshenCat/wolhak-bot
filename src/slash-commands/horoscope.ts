@@ -194,8 +194,8 @@ export const HoroscopeCommand: SlashCommand = {
                 editedImage.fileBuffer
             );
             console.timeEnd('uploadtos3');
-            // console.log('-----------finalImagePath: ');
-            // console.log(finalImagePath);
+            console.log('-----------finalImagePath: ');
+            console.log(finalImagePath);
 
             console.log(getS3FileURL(finalImagePath))
 
