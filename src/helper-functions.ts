@@ -113,7 +113,7 @@ export function addTextToImage({
             .title { font-size: 64px; font-weight: bold }
             .subtitle { font-size: 32px; }
             .horoscope { 
-                font-size: 28px;
+                font-size: 24px;
                 stroke-width: 6px;
                 stroke-linejoin: round;
                 paint-order: stroke;
@@ -238,7 +238,7 @@ export const uploadToS3 = (
 // };
 
 const newLineBuilder = (longstring: string) => {
-    const splittedString = longstring.match(/.{1,36}/g);
+    const splittedString = longstring.match(/.{1,34}/g);
     if (splittedString === null)
         throw new Error('NEW LINE BUILDER RECIEVED EMPTY STRING');
     const newStringArr = [];
@@ -262,6 +262,15 @@ const newLineBuilder = (longstring: string) => {
 
 export const getS3FileURL = (filename: string) => {
     // https://wolhak.s3.us-east-1.amazonaws.com/dev/dev-283092691946831885-Taurus-26-02-2024.jpg
+    console.log(
+        'https://' +
+            S3_BUCKET_NAME +
+            '.s3.' +
+            AWS_REGION +
+            '.amazonaws.com/' +
+            (DEV ? 'dev/' : 'prod/') +
+            filename
+    );
     return 'https://' +
         S3_BUCKET_NAME +
         '.s3.' +
