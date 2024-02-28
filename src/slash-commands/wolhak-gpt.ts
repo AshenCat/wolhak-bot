@@ -1,7 +1,7 @@
 import { EmbedBuilder, SlashCommandBuilder } from 'discord.js';
 import { DEV, GPT_INTERVAL, OPEN_API_KEY } from '../config';
 import { SlashCommand } from '../types';
-import { Configuration, OpenAIApi } from 'openai';
+import OpenAI from 'openai';
 import User from '../db/models/user.model';
 import Gpt from '../db/models/gpt.model';
 import { getChatGPTResponse } from '../helper-functions';
@@ -29,11 +29,9 @@ import { AxiosError } from 'axios';
 //     ];
 // };
 
-const configuration = new Configuration({
+const openai = new OpenAI({
     apiKey: OPEN_API_KEY,
 });
-
-const openai = new OpenAIApi(configuration);
 
 export const WolhakGPTCommand: SlashCommand = {
     command: new SlashCommandBuilder()
@@ -113,8 +111,8 @@ export const WolhakGPTCommand: SlashCommand = {
                 return;
             }
 
-            const completion = (
-                await openai.createChatCompletion({
+            const completion = 
+                await openai.chat.completions.create({
                     model: model,
                     messages: [
                         {
@@ -122,8 +120,7 @@ export const WolhakGPTCommand: SlashCommand = {
                             content: prompt,
                         },
                     ],
-                })
-            ).data;
+                });
 
             if (!completion.choices.length)
                 throw new Error('I have no words for that.');
@@ -157,8 +154,8 @@ export const WolhakGPTCommand: SlashCommand = {
             });
         } catch (error) {
             const err = error as AxiosError;
-            // console.error(err);
-            console.error(err.toJSON());
+            console.error(err);
+            // console.error(err.toJSON());
             await interaction.editReply({
                 content: `I'm sorry, ChatGPT said: ${String(
                     err

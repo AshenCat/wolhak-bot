@@ -22,7 +22,7 @@ export const UserInfoCommand: SlashCommand = {
             });
         };
 
-        const user = interaction.options.getUser('user', true);
+        const user = interaction.user;
         const avatar = user.displayAvatarURL();
 
         const embed = new EmbedBuilder()
