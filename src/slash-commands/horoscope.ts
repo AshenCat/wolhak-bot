@@ -197,11 +197,10 @@ export const HoroscopeCommand: SlashCommand = {
             console.log('-----------finalImagePath: ');
             console.log(finalImagePath);
 
-
             const url = getS3FileURL(finalImagePath);
 
-            console.log('-----------URL')
-            console.log(url)
+            console.log('-----------URL');
+            console.log(url);
 
             const embed = new EmbedBuilder()
                 .setTitle(
@@ -240,7 +239,7 @@ export const HoroscopeCommand: SlashCommand = {
         } catch (err) {
             console.log(err);
             await interaction.editReply({
-                content: `I'm sorry, ChatGPT said: ${String(
+                content: `It seems like I can't generate a horoscope for you just yet: ${String(
                     err
                 )}. Please try again later.`,
             });
