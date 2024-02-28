@@ -197,6 +197,8 @@ export const HoroscopeCommand: SlashCommand = {
             // console.log('-----------finalImagePath: ');
             // console.log(finalImagePath);
 
+            console.log(getS3FileURL(finalImagePath))
+
             const embed = new EmbedBuilder()
                 .setTitle(
                     `Here's your ${

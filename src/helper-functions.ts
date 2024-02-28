@@ -1,7 +1,7 @@
 import axios from 'axios';
 import OpenAI from 'openai';
 import sharp from 'sharp';
-import crypto from 'crypto'
+import crypto from 'crypto';
 import {
     AWS_ACCESS_KEY,
     AWS_REGION,
@@ -10,10 +10,7 @@ import {
     S3_BUCKET_NAME,
     ZODIAC_SIGNS,
 } from './config';
-import {
-    PutObjectCommand,
-    S3Client,
-} from '@aws-sdk/client-s3';
+import { PutObjectCommand, S3Client } from '@aws-sdk/client-s3';
 
 if (
     S3_BUCKET_NAME === '' ||
@@ -79,12 +76,12 @@ export const randomToken = (): Promise<string> => {
     return new Promise((resolve, reject) => {
         try {
             const token = crypto.randomBytes(16).toString('base64url');
-            resolve(token)
-        } catch(err) {
-            reject(err)
+            resolve(token);
+        } catch (err) {
+            reject(err);
         }
-    })
-}
+    });
+};
 
 export function addTextToImage({
     zodiac,
@@ -265,5 +262,12 @@ const newLineBuilder = (longstring: string) => {
 
 export const getS3FileURL = (filename: string) => {
     // https://wolhak.s3.us-east-1.amazonaws.com/dev/dev-283092691946831885-Taurus-26-02-2024.jpg
-    return 'https://wolhak.s3.us-east-1.amazonaws.com/dev/' + filename;
+    return 'https://' +
+        S3_BUCKET_NAME +
+        '.s3.' +
+        AWS_REGION +
+        '.amazonaws.com/' +
+        DEV
+        ? 'dev/'
+        : 'prod/' + filename;
 };
