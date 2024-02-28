@@ -1,8 +1,9 @@
 import { SlashCommand } from '../types';
-import { AddCommand } from './add';
+// import { AddCommand } from './add';
 // import { AddRolesCommand } from './add-roles';
 import { GetRandomAnimeCommand } from './get-random-anime';
-import { GoogleCommand } from './google';
+// import { GoogleCommand } from './google';
+import { HoroscopeCommand } from './horoscope';
 // import { HelloCommand } from './hello';
 // import { HelpCommand } from './help';
 import { HugCommand } from './hug';
@@ -14,8 +15,8 @@ import { WolhakImageGPTCommand } from './wolhak-image-gpt';
 
 const SlashCommands: SlashCommand[] = [
     // HelloCommand,
-    AddCommand,
-    GoogleCommand,
+    // AddCommand,
+    // GoogleCommand,
     UserInfoCommand,
     PollCommand,
     GetRandomAnimeCommand,
@@ -24,6 +25,7 @@ const SlashCommands: SlashCommand[] = [
     HugCommand,
     WolhakGPTCommand,
     WolhakImageGPTCommand,
+    HoroscopeCommand,
 ];
 
 // const helpArray: HelpArray = SlashCommands.filter(
