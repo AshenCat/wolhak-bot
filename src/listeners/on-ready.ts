@@ -55,7 +55,7 @@ export const onReady = (client: Client) => {
                             console.log("WHS_WELCOME_CHANNEL_ID is missing. SHUTTING DOWN")
                             return;
                         };
-                    if (!WHS_ADMIN_ROLE || WHS_OWNER_ID === '') {
+                    if (!WHS_ADMIN_ROLE || WHS_ADMIN_ROLE === '') {
                         console.log("WHS_ADMIN_ROLE is missing. SHUTTING DOWN")
                         return;
                     };
