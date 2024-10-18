@@ -7,6 +7,7 @@ import {
     AWS_REGION,
     AWS_SECRET_ACCESS_KEY,
     DEV,
+    GPT_INTERVAL,
     S3_BUCKET_NAME,
     ZODIAC_SIGNS,
 } from './config';
@@ -270,7 +271,33 @@ export const getS3FileURL = (filename: string) => {
         '.amazonaws.com/' +
         (DEV ? 'dev/' : 'prod/') +
         filename;
-    console.log('------------getS3FileURL');
-    console.log(url);
     return url;
+};
+
+export const intervalReplyString = () => {
+    return `Your next query will be <t:${
+        Math.floor(Date.now().valueOf() / 1000) + GPT_INTERVAL
+    }:R>`;
+};
+
+type CommandLimitReplyStringParams = {
+    user_command_calls: number;
+    command_limit: number;
+};
+
+export const commandLimitReplyString = ({
+    user_command_calls,
+    command_limit,
+}: CommandLimitReplyStringParams) => {
+    const tomorrow = new Date(new Date().setDate(new Date().getDate() + 1));
+    tomorrow.setHours(0, 0, 0, 0);
+    return `You have already used the command \`${user_command_calls} time${
+        user_command_calls === 1 ? '' : 's'
+    } today\`. Based on your role, you can use this command \`${
+        command_limit - user_command_calls
+    } more time${
+        command_limit - user_command_calls === 1 ? '' : 's'
+    }\` today. The counter resets in <t:${Math.floor(
+        tomorrow.getTime() / 1000
+    )}:R>`;
 };

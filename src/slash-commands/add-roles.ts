@@ -1,11 +1,11 @@
 import { EmbedBuilder, SlashCommandBuilder } from 'discord.js';
-import { DEV } from '../config';
+import { COMMAND_NAMES } from '../config';
 import { SELF_ROLES } from '../self-roles';
 import { SlashCommand } from '../types';
 
 export const AddRolesCommand: SlashCommand = {
     command: new SlashCommandBuilder()
-        .setName(`${DEV ? 'dev_' : ''}add_roles`)
+        .setName(COMMAND_NAMES.add_roles.command_name)
         .setDescription(
             'Creates a message so that people can get their own roles'
         )
