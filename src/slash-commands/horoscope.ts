@@ -1,20 +1,40 @@
-import { EmbedBuilder, SlashCommandBuilder } from 'discord.js';
-import { DEV, GPT_INTERVAL, OPEN_API_KEY, ZODIAC_SIGNS } from '../config';
+import {
+    EmbedBuilder,
+    GuildMemberRoleManager,
+    SlashCommandBuilder,
+} from 'discord.js';
+import {
+    COMMAND_NAMES,
+    GPT_INTERVAL,
+    OPEN_API_KEY,
+    ZODIAC_SIGNS,
+} from '../config';
 import { SlashCommand } from '../types';
 import OpenAI from 'openai';
 import User from '../db/models/user.model';
-import Gpt from '../db/models/gpt.model';
+// import Gpt from '../db/models/gpt.model';
 import {
     addTextToImage,
+    commandLimitReplyString,
     getChatGPTResponse,
     getDateDashSeperated,
     getS3FileURL,
+    intervalReplyString,
     uploadToS3,
 } from '../helper-functions';
+import Server from '../db/models/server.model';
+import { getCommandLimit } from '../db/dao/server.dao';
+import {
+    getTotalUserCommandCallsToday,
+    hasUsedCommandLastGivenTime,
+} from '../db/dao/command-usage.dao';
+import CommandsUsage from '../db/models/command-usage.model';
 
 const openai = new OpenAI({
     apiKey: OPEN_API_KEY,
 });
+
+const this_command = 'horoscope';
 
 export const HoroscopeCommand: SlashCommand = {
     command: new SlashCommandBuilder()
@@ -32,7 +52,7 @@ export const HoroscopeCommand: SlashCommand = {
                     ]
                 )
         )
-        .setName(`${DEV ? 'dev_' : ''}horoscope`)
+        .setName(COMMAND_NAMES.horoscope.command_name)
         .setDescription(
             'Replies with an AI generated horoscope embedded in a random image created by DALL-E'
         ),
@@ -41,6 +61,13 @@ export const HoroscopeCommand: SlashCommand = {
         await interaction.deferReply();
 
         try {
+            if (!interaction.inCachedGuild()) {
+                await interaction.editReply({
+                    content: `You can not use /${COMMAND_NAMES[this_command].command_name} command`,
+                });
+                return;
+            }
+
             console.time('total');
             const { options, user } = interaction;
             const userId = user.id;
@@ -57,12 +84,58 @@ export const HoroscopeCommand: SlashCommand = {
                 return;
             }
 
-            /**
-             * CHECK IF ZODIAC OPTION IS PRESENT. IF NOT CHECK IF USER HAS REGISTERED ZODIAC.
-             * IF THERES NO ZODIAC OPTION BUT HAS REGISTERED ZODIAC, USE REGISTERED ZODIAC.
-             */
+            const serverDBSettings = await Server.findOne({
+                discord_server_id: interaction.guild.id,
+            });
+
+            if (!serverDBSettings) {
+                await interaction.editReply({
+                    content:
+                        'Cant use GPT if you are not registered at db. Contact the mods for support.',
+                });
+                return;
+            }
+
+            const guildId = interaction.guildId;
+
+            const userRoles = (
+                interaction.member.roles as GuildMemberRoleManager
+            ).cache;
+
+            const [command_limit, user_command_calls] = await Promise.all([
+                getCommandLimit({
+                    server_id: guildId,
+                    command_name: COMMAND_NAMES[this_command].command_name,
+                    role_ids: [...userRoles.keys()],
+                }),
+                getTotalUserCommandCallsToday({
+                    discord_user_id: userId,
+                    server_id: guildId,
+                    command_name: COMMAND_NAMES[this_command].command_name,
+                }),
+            ]);
+
+            // console.log('command_limit');
+            // console.log(command_limit);
+            // console.log('user_command_calls');
+            // console.log(user_command_calls);
+
+            if (command_limit > -1 && user_command_calls >= command_limit) {
+                await interaction.editReply({
+                    content: commandLimitReplyString({
+                        user_command_calls,
+                        command_limit,
+                    }),
+                });
+                return;
+            }
 
             if (typeof zodiac !== 'string' || zodiac.trim() === '') {
+                /**
+                 * CHECK IF ZODIAC OPTION IS PRESENT. IF NOT CHECK IF USER HAS REGISTERED ZODIAC.
+                 * IF THERES NO ZODIAC OPTION BUT HAS REGISTERED ZODIAC, USE REGISTERED ZODIAC.
+                 */
+
                 if (
                     !dbUser.zodiac ||
                     !Object.keys(ZODIAC_SIGNS).includes(zodiac as string)
@@ -76,33 +149,23 @@ export const HoroscopeCommand: SlashCommand = {
                 zodiac = dbUser.zodiac;
             }
 
-            const latestGPTRequest = await Gpt.findOne(
-                { success: true },
-                {},
-                { sort: { created_at: -1 } }
-            );
+            const latestGPTRequest = await hasUsedCommandLastGivenTime({
+                command_name: COMMAND_NAMES[this_command].command_name,
+                time_in_seconds: GPT_INTERVAL,
+                discord_user_id: userId,
+            });
 
             if (latestGPTRequest) {
-                const now = new Date();
-                const minuteAfter = new Date(latestGPTRequest.created_at);
-
-                if (
-                    now.valueOf() - minuteAfter.valueOf() <
-                    GPT_INTERVAL * 1000
-                ) {
-                    await interaction.editReply({
-                        content: `Your next query will be <t:${
-                            Date.now().valueOf() + GPT_INTERVAL
-                        }:R>`,
-                    });
-                    console.timeEnd('total');
-                    return;
-                }
+                await interaction.editReply({
+                    content: intervalReplyString(),
+                });
+                console.timeEnd('total');
+                return;
             }
 
             const model = (() => {
                 const model = options.get('model')?.value;
-                if (typeof model !== 'string') return 'gpt-3.5-turbo-0301';
+                if (typeof model !== 'string') return 'gpt-3.5-turbo-0125';
                 return model;
             })();
 
@@ -162,15 +225,6 @@ export const HoroscopeCommand: SlashCommand = {
 
             console.timeEnd('bgimage');
 
-            const gpt_response = new Gpt({
-                type: 'image/generations',
-                prompt,
-                user: dbUser.id,
-                response: imageResponse,
-            });
-
-            await gpt_response.save();
-
             // console.log('-----------backgroundImage');
             // console.log(backgroundImage);
 
@@ -194,13 +248,8 @@ export const HoroscopeCommand: SlashCommand = {
                 editedImage.fileBuffer
             );
             console.timeEnd('uploadtos3');
-            console.log('-----------finalImagePath: ');
-            console.log(finalImagePath);
 
             const url = getS3FileURL(finalImagePath);
-
-            console.log('-----------URL');
-            console.log(url);
 
             const embed = new EmbedBuilder()
                 .setTitle(
@@ -208,7 +257,7 @@ export const HoroscopeCommand: SlashCommand = {
                         ZODIAC_SIGNS[zodiac as keyof typeof ZODIAC_SIGNS].zodiac
                     } horoscope for today!`
                 )
-                .setThumbnail('' + user.avatarURL())
+                .setThumbnail(user.avatarURL())
                 .setColor('Blurple')
                 .setFooter({
                     text: `${getDateDashSeperated()}`,
@@ -232,9 +281,17 @@ export const HoroscopeCommand: SlashCommand = {
                 // .setDescription(`${horoscope}`)
                 .setImage(url);
 
-            interaction.editReply({
-                embeds: [embed],
-            });
+            await Promise.all([
+                await interaction.editReply({
+                    embeds: [embed],
+                }),
+                await CommandsUsage.create({
+                    command_name: COMMAND_NAMES[this_command].command_name,
+                    discord_user_id: userId,
+                    discord_server_id: guildId,
+                    prompt: prompt,
+                })
+            ]);
             console.timeEnd('total');
         } catch (err) {
             console.log(err);

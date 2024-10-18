@@ -1,8 +1,10 @@
 import axios from 'axios';
 import { EmbedBuilder, SlashCommandBuilder, TextChannel } from 'discord.js';
-import { DEV } from '../config';
+import { COMMAND_NAMES } from '../config';
 import User from '../db/models/user.model';
 import { SlashCommand } from '../types';
+import { GetHugCount } from '../db/dao/hug.dao';
+import Hug from '../db/models/hug.model';
 
 // const TENOR_API = encodeURI(
 //     `https://api.tenor.com/v1/random?q=anime%20hug&key=${TENOR_API_KEY}`
@@ -36,13 +38,18 @@ type NekosBestAPIResponse = {
 export const HugCommand: SlashCommand = {
     command: (() => {
         const slashCommand = new SlashCommandBuilder()
-            .setName(`${DEV ? 'dev_' : ''}hug`)
+            .addUserOption((option) =>
+                option
+                    .setName(`user1`)
+                    .setRequired(true)
+                    .setDescription('Hugs the user...')
+            )
+            .setName(COMMAND_NAMES.hug.command_name)
             .setDescription('Hugs up to 10 users... or just yourself...');
-
-        Array.from({ length: 10 }).forEach((_, ctr) => {
+        Array.from({ length: 9 }).forEach((_, ctr) => {
             slashCommand.addUserOption((option) =>
                 option
-                    .setName(`user${ctr + 1}`)
+                    .setName(`user${ctr + 2}`)
                     .setDescription('Hugs the user...')
             );
         });
@@ -75,7 +82,7 @@ export const HugCommand: SlashCommand = {
                 (await interaction.client.guilds.fetch(interaction.guildId));
 
             const userId = user.id;
-            let huggedUsers: string[] = [];
+            // huggedUsers is array of given hugs
             const hugObjectArr: {
                 name: string;
                 value: string;
@@ -83,10 +90,30 @@ export const HugCommand: SlashCommand = {
                 userId?: string;
             }[] = [];
 
-            Array.from({ length: 10 }).map((_, ctr) => {
+            Array.from({ length: 10 }).map(async (_, ctr) => {
                 const huggedUser = options.get(`user${ctr + 1}`)?.value;
                 if (huggedUser) {
-                    huggedUsers.push('' + huggedUser);
+                    const member =
+                        guild.members.cache.get('' + huggedUser) ||
+                        (await guild.members.fetch('' + huggedUser));
+
+                    await Hug.create({
+                        from_discord_id: userId,
+                        to_discord_id: '' + huggedUser,
+                        discord_server_id: interaction.guildId,
+                    });
+
+                    const hugCount = await GetHugCount({
+                        from_discord_id: userId,
+                        to_discord_id: '' + huggedUser,
+                        discord_server_id: interaction.guildId,
+                    });
+
+                    hugObjectArr.push({
+                        name: member.displayName,
+                        value: '' + hugCount,
+                        userId: '' + huggedUser,
+                    });
                 }
             });
 
@@ -98,80 +125,80 @@ export const HugCommand: SlashCommand = {
                 return;
             }
 
-            if (huggedUsers.length) {
+            if (false /*huggedUsers.length*/) {
                 // [1] can be optimized
-                db_user.hugs.forEach(async (hug) => {
-                    if (huggedUsers.includes(hug.other_discord_user_id)) {
-                        const member =
-                            guild.members.cache.get(
-                                hug.other_discord_user_id
-                            ) ||
-                            (await guild.members.fetch(
-                                hug.other_discord_user_id
-                            ));
-                        hug.count += 1;
-                        hugObjectArr.push({
-                            name: member.displayName,
-                            value: '' + hug.count,
-                            userId: hug.other_discord_user_id,
-                        });
-                        huggedUsers = huggedUsers.filter(
-                            (id) => id !== hug.other_discord_user_id
-                        );
-                    }
-                });
-                if (huggedUsers.length) {
-                    huggedUsers.forEach(async (hug) => {
-                        const member =
-                            guild.members.cache.get(hug) ||
-                            (await guild.members.fetch(hug));
-                        hugObjectArr.push({
-                            name: member.displayName,
-                            value: '' + 1,
-                            userId: hug,
-                        });
-                        db_user.hugs.push({
-                            other_discord_user_id: hug,
-                            count: 1,
-                        });
-                    });
-                }
-                await db_user.save();
+                // db_user.hugs.forEach(async (hug) => {
+                //     if (huggedUsers.includes(hug.other_discord_user_id)) {
+                //         const member =
+                //             guild.members.cache.get(
+                //                 hug.other_discord_user_id
+                //             ) ||
+                //             (await guild.members.fetch(
+                //                 hug.other_discord_user_id
+                //             ));
+                //         hug.count += 1;
+                //         hugObjectArr.push({
+                //             name: member.displayName,
+                //             value: '' + hug.count,
+                //             userId: hug.other_discord_user_id,
+                //         });
+                //         huggedUsers = huggedUsers.filter(
+                //             (id) => id !== hug.other_discord_user_id
+                //         );
+                //     }
+                // });
+                // if (huggedUsers.length) {
+                //     huggedUsers.forEach(async (hug) => {
+                //         const member =
+                //             guild.members.cache.get(hug) ||
+                //             (await guild.members.fetch(hug));
+                //         hugObjectArr.push({
+                //             name: member.displayName,
+                //             value: '' + 1,
+                //             userId: hug,
+                //         });
+                //         db_user.hugs.push({
+                //             other_discord_user_id: hug,
+                //             count: 1,
+                //         });
+                //     });
+                // }
+                // await db_user.save();
                 // [1] end
             } else {
                 // self hug
-                const existingHug = db_user.hugs.find(
-                    (hubObj) => hubObj.other_discord_user_id
-                );
-                if (existingHug) {
-                    db_user.hugs.forEach(async (hugItem) => {
-                        if (hugItem.other_discord_user_id === userId) {
-                            const member =
-                                guild.members.cache.get(userId) ||
-                                (await guild.members.fetch(userId));
-                            hugItem.count += 1;
-                            hugObjectArr.push({
-                                name: member.displayName,
-                                value: '' + hugItem.count,
-                                userId: hugItem.other_discord_user_id,
-                            });
-                        }
-                    });
-                } else {
-                    const member =
-                        guild.members.cache.get(userId) ||
-                        (await guild.members.fetch(userId));
-                    hugObjectArr.push({
-                        name: member.displayName,
-                        value: '' + 1,
-                        userId: userId,
-                    });
-                    db_user.hugs.push({
-                        other_discord_user_id: userId,
-                        count: 1,
-                    });
-                }
-                await db_user.save();
+                // const existingHug = db_user.hugs.find(
+                //     (hubObj) => hubObj.other_discord_user_id
+                // );
+                // if (existingHug) {
+                //     db_user.hugs.forEach(async (hugItem) => {
+                //         if (hugItem.other_discord_user_id === userId) {
+                //             const member =
+                //                 guild.members.cache.get(userId) ||
+                //                 (await guild.members.fetch(userId));
+                //             hugItem.count += 1;
+                //             hugObjectArr.push({
+                //                 name: member.displayName,
+                //                 value: '' + hugItem.count,
+                //                 userId: hugItem.other_discord_user_id,
+                //             });
+                //         }
+                //     });
+                // } else {
+                //     const member =
+                //         guild.members.cache.get(userId) ||
+                //         (await guild.members.fetch(userId));
+                //     hugObjectArr.push({
+                //         name: member.displayName,
+                //         value: '' + 1,
+                //         userId: userId,
+                //     });
+                //     db_user.hugs.push({
+                //         other_discord_user_id: userId,
+                //         count: 1,
+                //     });
+                // }
+                // await db_user.save();
             }
 
             // const response: TenorResponse = await axios.get(TENOR_API);
@@ -192,10 +219,7 @@ export const HugCommand: SlashCommand = {
             const hugTagMap = hugObjectArr
                 .map((obj) => `<@${obj.userId}>`)
                 .join(', ');
-            const descriptionString =
-                hugObjectArr.length > 0
-                    ? `*${user} hugged ${hugTagMap}!*`
-                    : `*${user} self-hug*`;
+            const descriptionString = `*${user} hugged ${hugTagMap}!*`;
 
             const embed = new EmbedBuilder()
                 .setTitle('Awwwwwwww')
@@ -205,13 +229,13 @@ export const HugCommand: SlashCommand = {
                 .setColor('Blurple')
                 .setFooter({ text: gifAnimeName });
 
-            if (hugObjectArr.length)
-                embed.addFields(
-                    hugObjectArr.map((hug) => ({
-                        name: `${hug.name} hugs:`,
-                        value: hug.value,
-                    }))
-                );
+            // if (hugObjectArr.length)
+            embed.addFields(
+                hugObjectArr.map((hug) => ({
+                    name: `${hug.name} hugs:`,
+                    value: hug.value,
+                }))
+            );
 
             await interaction.editReply({
                 embeds: [embed],

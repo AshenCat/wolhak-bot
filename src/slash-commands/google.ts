@@ -4,14 +4,14 @@ import {
     ButtonStyle,
     SlashCommandBuilder,
 } from 'discord.js';
-import { DEV } from '../config';
+import { COMMAND_NAMES } from '../config';
 import { SlashCommand } from '../types';
 
 const GOOGLE_URL = 'https://google.com';
 
 export const GoogleCommand: SlashCommand = {
     command: new SlashCommandBuilder()
-        .setName(`${DEV ? 'dev_' : ''}google`)
+        .setName(COMMAND_NAMES.google.command_name)
         .setDescription('Returns a link to Google'),
 
     async run(interaction) {

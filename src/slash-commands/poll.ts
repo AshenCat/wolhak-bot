@@ -5,7 +5,7 @@ import {
     EmbedBuilder,
     SlashCommandBuilder,
 } from 'discord.js';
-import { DEV } from '../config';
+import { COMMAND_NAMES } from '../config';
 import { SlashCommand } from '../types';
 
 enum TimeUnit {
@@ -44,7 +44,7 @@ export const PollCommand: SlashCommand = {
                         { name: TimeUnit.hours, value: TimeUnit.hours }
                     )
             )
-            .setName(`${DEV ? 'dev_' : ''}poll`)
+            .setName(COMMAND_NAMES.poll.command_name)
             .setDescription('Creates a poll');
 
         OPTIONS.forEach(({ name, description, required }) => {

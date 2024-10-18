@@ -5,12 +5,14 @@ import {
     Partials,
     TextChannel,
 } from 'discord.js';
-import { DATETIME_FORMAT, DEV, TIMEZONE, TOKEN, WELCOME_CHANNEL_ID } from './config';
+import { DATETIME_FORMAT, DEV, TIMEZONE, TOKEN } from './config';
 import { onInteractionCreate, onMessageCreate, onReady } from './listeners';
 import { onUserJoin } from './listeners/on-user-join';
 import cron from 'node-cron';
 import moment from 'moment-timezone';
 import { getInspirationImageURL } from './helper-functions';
+import Server from './db/models/server.model';
+import { onBotJoin } from './listeners/on-bot-join';
 
 const client = new Client({
     intents: [
@@ -29,6 +31,7 @@ onReady(client);
 onMessageCreate(client);
 onInteractionCreate(client);
 onUserJoin(client);
+onBotJoin(client);
 
 client.login(TOKEN);
 
@@ -44,18 +47,30 @@ cron.schedule('*/30 * * * *', () => {
 cron.schedule('0 0 * * *', async () => {
     try {
         if (DEV) return;
-        if (!WELCOME_CHANNEL_ID) return;
-        const welcomeChannel =
-            client.channels.cache.get(WELCOME_CHANNEL_ID) ||
-            (await client.channels.fetch(WELCOME_CHANNEL_ID));
-        const url = await getInspirationImageURL();
-        const embed = new EmbedBuilder()
-            .setDescription(`*Here's a random inspiration for today!*`)
-            .setImage(url)
-            .setColor('Blurple');
+        const servers = await Server.find({});
+        for (const server of servers) {
+            if (
+                !server.general_channel_id ||
+                typeof server.general_channel_id !== 'string'
+            ) {
+                console.log(
+                    `DAILY INSPIRATION: server general chat (${server.general_channel_id}) not found`
+                );
+                return;
+            }
+            const welcomeChannel =
+                client.channels.cache.get(server.general_channel_id) ||
+                (await client.channels.fetch(server.general_channel_id));
 
-        if (welcomeChannel?.isTextBased()) {
-            (<TextChannel>welcomeChannel).send({ embeds: [embed] });
+            const url = await getInspirationImageURL();
+            const embed = new EmbedBuilder()
+                .setDescription(`*Here's a random inspiration for today!*`)
+                .setImage(url)
+                .setColor('Blurple');
+
+            if (welcomeChannel?.isTextBased()) {
+                (<TextChannel>welcomeChannel).send({ embeds: [embed] });
+            }
         }
     } catch (err) {
         console.log(err);

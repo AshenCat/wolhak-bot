@@ -1,5 +1,5 @@
 import { EmbedBuilder, roleMention, SlashCommandBuilder } from 'discord.js';
-import { DEV } from '../config';
+import { COMMAND_NAMES } from '../config';
 import { SlashCommand } from '../types';
 
 export const UserInfoCommand: SlashCommand = {
@@ -10,7 +10,7 @@ export const UserInfoCommand: SlashCommand = {
                 .setDescription('The user which we will know about')
                 .setRequired(true)
         )
-        .setName(`${DEV ? 'dev_' : ''}user_info`)
+        .setName(COMMAND_NAMES.user_info.command_name)
         .setDescription('Returns the info of the specified user'),
     async run(interaction) {
         const getFormattedDate = (date: Date) => {

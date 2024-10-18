@@ -1,6 +1,6 @@
 import axios from 'axios';
 import { EmbedBuilder, hyperlink, SlashCommandBuilder } from 'discord.js';
-import { DEV } from '../config';
+import { COMMAND_NAMES } from '../config';
 import { SlashCommand } from '../types';
 
 const GET_RANDOM_ANIME_URL = 'https://api.jikan.moe/v4/random/anime';
@@ -133,7 +133,7 @@ type GetRandomAnimeResponse = {
 
 export const GetRandomAnimeCommand: SlashCommand = {
     command: new SlashCommandBuilder()
-        .setName(`${DEV ? 'dev_' : ''}get_random_anime`)
+        .setName(COMMAND_NAMES.get_random_anime.command_name)
         .setDescription('Returns a random anime'),
 
     async run(interaction) {
@@ -171,6 +171,9 @@ export const GetRandomAnimeCommand: SlashCommand = {
                     themes,
                 },
             } = response;
+            // console.log('url', url)
+            // console.log('image_url', image_url)
+            // console.log('synopsis', synopsis)
 
             const embed = new EmbedBuilder()
                 .setTitle(title)
@@ -189,25 +192,26 @@ export const GetRandomAnimeCommand: SlashCommand = {
                 .join('\n');
 
             embed.addFields(
-                { name: 'Rank', value: rank?.toString(), inline: true },
-                { name: 'Type', value: type?.toString(), inline: true },
-                { name: 'Score', value: score?.toString(), inline: true },
+                { name: 'Rank', value: '' + rank?.toString(), inline: true },
+                { name: 'Type', value: '' + type?.toString(), inline: true },
+                { name: 'Score', value: '' + score?.toString(), inline: true },
                 {
                     name: 'Scored by',
-                    value: scored_by?.toString(),
+                    value: '' + scored_by?.toString(),
                     inline: true,
                 },
-                { name: 'Status', value: status?.toString(), inline: true },
-                { name: 'Rating', value: rating?.toString(), inline: true },
-                { name: 'Duration', value: duration?.toString(), inline: true },
-                { name: 'Genres', value: genresString?.toString() },
-                { name: 'Themes', value: themesString?.toString() }
+                { name: 'Status', value: '' + status?.toString(), inline: true },
+                { name: 'Rating', value: '' + rating?.toString(), inline: true },
+                { name: 'Duration', value: '' + duration?.toString(), inline: true },
+                { name: 'Genres', value: '' + genresString?.toString() },
+                { name: 'Themes', value: '' + themesString?.toString() }
             );
 
             await interaction.editReply({
                 embeds: [embed],
             });
         } catch (err) {
+            console.error(err);
             await interaction.editReply({
                 content:
                     "I'm sorry, my sources is spouting something gibberish...\nPlease try again!",
