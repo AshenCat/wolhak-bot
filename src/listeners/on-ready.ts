@@ -39,14 +39,26 @@ export const onReady = (client: Client) => {
                 if (!DEV) {
                     console.log('PROD: ADDING WOLHAKSONG GUILD TO THE DB');
 
-                    if (!WHS_GUILD_ID || WHS_GUILD_ID === '') return;
-                    if (!WHS_OWNER_ID || WHS_OWNER_ID === '') return;
+                    if (!WHS_GUILD_ID || WHS_GUILD_ID === '') {
+                        console.log("WHS_GUILD_ID is missing. SHUTTING DOWN")
+                        return;
+                    };
+                    if (!WHS_OWNER_ID || WHS_OWNER_ID === '') {
+                        console.log("WHS_OWNER_ID is missing. SHUTTING DOWN")
+                        return;
+                    };
                     if (
                         !WHS_WELCOME_CHANNEL_ID ||
                         WHS_WELCOME_CHANNEL_ID === ''
                     )
+                        {
+                            console.log("WHS_WELCOME_CHANNEL_ID is missing. SHUTTING DOWN")
+                            return;
+                        };
+                    if (!WHS_ADMIN_ROLE || WHS_OWNER_ID === '') {
+                        console.log("WHS_ADMIN_ROLE is missing. SHUTTING DOWN")
                         return;
-                    if (!WHS_ADMIN_ROLE || WHS_OWNER_ID === '') return;
+                    };
 
                     const newServer = {
                         discord_server_id: WHS_GUILD_ID,
